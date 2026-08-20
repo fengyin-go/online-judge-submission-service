@@ -24,6 +24,9 @@ func NewFlowService(st *store.FlowStore, v model.FlowValidator) *FlowService {
 }
 
 func (s *FlowService) Process(ctx context.Context, id string) error {
+	if s == nil || s.store == nil {
+		return errors.New("flow service unavailable")
+	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -31,7 +34,7 @@ func (s *FlowService) Process(ctx context.Context, id string) error {
 	if t == nil {
 		return errors.New("ticket missing")
 	}
-	if t.Status == model.FlowAccepted {
+	if model.IsTerminalStatus(t.Status) {
 		return errors.New("ticket already terminal")
 	}
 	if err := s.validator.Validate(t); err != nil {
@@ -52,11 +55,17 @@ func (s *FlowService) Process(ctx context.Context, id string) error {
 }
 
 func (s *FlowService) Retry(ctx context.Context, id string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	if t := s.store.Get(id); t != nil && t.Status == model.FlowAccepted {
 		s.store.AddEvent("retry:" + id)
 		return nil
 	}
 	if err := s.Process(ctx, id); err != nil {
+		if ctx.Err() != nil {
+			return err
+		}
 		return err
 	}
 	s.store.AddEvent("retry:" + id)
