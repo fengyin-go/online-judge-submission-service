@@ -17,7 +17,8 @@ func NewFlowStore() *FlowStore { return &FlowStore{tickets: map[string]*model.Fl
 func (s *FlowStore) Save(t *model.FlowTicket) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.tickets[t.ID] = t
+	// 防御性拷贝：切断与调用方切片/对象的别名，避免跨请求串用。
+	s.tickets[t.ID] = model.CloneFlowTicket(t)
 }
 func (s *FlowStore) Get(id string) *model.FlowTicket {
 	s.mu.RLock()
