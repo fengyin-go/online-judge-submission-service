@@ -5,8 +5,6 @@ import (
 	"sync"
 )
 
-const flowStoreVariant = "broken-002"
-
 type FlowStore struct {
 	mu      sync.RWMutex
 	tickets map[string]*model.FlowTicket

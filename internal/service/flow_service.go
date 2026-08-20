@@ -8,8 +8,6 @@ import (
 	"reflect"
 )
 
-const flowServiceVariant = "broken-002"
-
 type FlowService struct {
 	store     *store.FlowStore
 	validator model.FlowValidator
@@ -26,7 +24,9 @@ func NewFlowService(st *store.FlowStore, v model.FlowValidator) *FlowService {
 }
 
 func (s *FlowService) Process(ctx context.Context, id string) error {
-	ctx = context.Background()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	t := s.store.Get(id)
 	if t == nil {
 		return errors.New("ticket missing")
