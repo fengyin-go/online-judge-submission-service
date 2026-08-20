@@ -54,11 +54,19 @@ func (s *FlowService) Process(ctx context.Context, id string) error {
 }
 
 func (s *FlowService) Retry(ctx context.Context, id string) error {
+	// 取消的重试不应落入事件记录，否则值班会误以为任务又跑了一次。
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	if t := s.store.Get(id); t != nil && t.Status == model.FlowAccepted {
 		s.store.AddEvent("retry:" + id)
 		return nil
 	}
 	if err := s.Process(ctx, id); err != nil {
+		// Process 中途被取消时上下文已 Done，同样不计入 retry 事件。
+		if ctx.Err() != nil {
+			return err
+		}
 		s.store.AddEvent("retry:" + id)
 		return err
 	}
