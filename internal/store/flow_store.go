@@ -13,11 +13,17 @@ type FlowStore struct {
 
 func NewFlowStore() *FlowStore { return &FlowStore{tickets: map[string]*model.FlowTicket{}} }
 func (s *FlowStore) Save(t *model.FlowTicket) {
+	if s == nil || t == nil || t.ID == "" {
+		return
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.tickets[t.ID] = model.CloneFlowTicket(t)
 }
 func (s *FlowStore) Get(id string) *model.FlowTicket {
+	if s == nil || id == "" {
+		return nil
+	}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return model.CloneFlowTicket(s.tickets[id])

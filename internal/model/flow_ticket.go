@@ -21,6 +21,14 @@ const (
 type FlowValidator interface{ Validate(*FlowTicket) error }
 type DefaultFlowValidator struct{}
 
+func IsTerminalStatus(status string) bool {
+	return status == FlowAccepted || status == FlowFailed
+}
+
+func IsReadyForProcessing(t *FlowTicket) bool {
+	return t != nil && !IsTerminalStatus(t.Status)
+}
+
 func (DefaultFlowValidator) Validate(t *FlowTicket) error {
 	if t == nil || t.UserID == "" || t.ProblemID == "" {
 		return context.Canceled
