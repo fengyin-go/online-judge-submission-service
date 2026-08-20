@@ -5,9 +5,8 @@ import (
 	"errors"
 	"onlinejudge/internal/model"
 	"onlinejudge/internal/store"
+	"reflect"
 )
-
-const flowServiceVariant = "broken-004"
 
 type FlowService struct {
 	store     *store.FlowStore
@@ -17,6 +16,9 @@ type FlowService struct {
 func NewFlowService(st *store.FlowStore, v model.FlowValidator) *FlowService {
 	if v == nil {
 		v = model.DefaultFlowValidator{}
+	}
+	if reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil() {
+		v = model.RejectingFlowValidator{}
 	}
 	return &FlowService{store: st, validator: v}
 }
