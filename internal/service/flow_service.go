@@ -29,24 +29,30 @@ func (s *FlowService) Process(ctx context.Context, id string) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	t := s.store.Get(id)
-	if t == nil {
+	// 校验基于快照进行：被校验的字段（UserID/ProblemID）不会变化，
+	// 这样无效工单不会留下中间状态。
+	snap := s.store.Get(id)
+	if snap == nil {
 		return errors.New("ticket missing")
 	}
-	if err := s.validator.Validate(t); err != nil {
+	if err := s.validator.Validate(snap); err != nil {
 		return err
 	}
-	t.Status = model.FlowJudging
-	t.Attempts++
-	s.store.Save(t)
+	// 原子地认领工单进入 judging。若工单已被并发回调认领、或已处于终态，
+	// 认领失败，本次重复回调不得再产生任何结果（不增加次数、不发事件）。
+	if _, ok := s.store.ClaimForJudging(id); !ok {
+		return nil
+	}
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
 	}
-	t.Status = model.FlowAccepted
-	s.store.Save(t)
-	s.store.AddEvent("accepted:" + id)
+	// 原子地提交终态并记录完成事件。若并发调用已先行提交，则本次为空操作，
+	// 确保一次终态只产生一次结果。
+	if !s.store.CommitTerminal(id, model.FlowAccepted, "accepted:"+id) {
+		return nil
+	}
 	return nil
 }
 
