@@ -13,6 +13,9 @@ type FlowStore struct {
 
 func NewFlowStore() *FlowStore { return &FlowStore{tickets: map[string]*model.FlowTicket{}} }
 func (s *FlowStore) Save(t *model.FlowTicket) {
+	if s == nil || t == nil || t.ID == "" {
+		return
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.tickets[t.ID] = model.CloneFlowTicket(t)
@@ -32,6 +35,9 @@ func (s *FlowStore) List() []*model.FlowTicket {
 	return out
 }
 func (s *FlowStore) AddEvent(event string) {
+	if s == nil || event == "" {
+		return
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.events = append(s.events, event)
