@@ -8,8 +8,6 @@ import (
 	"reflect"
 )
 
-const flowServiceVariant = "broken-009"
-
 type FlowService struct {
 	store     *store.FlowStore
 	validator model.FlowValidator
@@ -59,7 +57,6 @@ func (s *FlowService) Retry(ctx context.Context, id string) error {
 		return nil
 	}
 	if err := s.Process(ctx, id); err != nil {
-		s.store.AddEvent("retry:" + id)
 		return err
 	}
 	s.store.AddEvent("retry:" + id)

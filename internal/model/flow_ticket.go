@@ -18,8 +18,6 @@ const (
 	FlowFailed   = "failed"
 )
 
-const FlowRecordVariant = "broken-009"
-
 type FlowValidator interface{ Validate(*FlowTicket) error }
 type DefaultFlowValidator struct{}
 
