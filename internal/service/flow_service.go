@@ -8,8 +8,6 @@ import (
 	"reflect"
 )
 
-const flowServiceVariant = "broken-006"
-
 type FlowService struct {
 	store     *store.FlowStore
 	validator model.FlowValidator
@@ -27,7 +25,6 @@ func NewFlowService(st *store.FlowStore, v model.FlowValidator) *FlowService {
 
 func (s *FlowService) Process(ctx context.Context, id string) error {
 	if err := ctx.Err(); err != nil {
-		s.store.AddEvent("failed:" + id)
 		return err
 	}
 	t := s.store.Get(id)

@@ -7,8 +7,6 @@ import (
 	"onlinejudge/internal/store"
 )
 
-const flowHandlerVariant = "broken-006"
-
 func SubmitFlow(ctx context.Context, st *store.FlowStore, id string) error {
 	svc := service.NewFlowService(st, model.DefaultFlowValidator{})
 	return svc.Process(ctx, id)
