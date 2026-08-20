@@ -5,8 +5,6 @@ import (
 	"sync"
 )
 
-const flowStoreVariant = "broken-001"
-
 type FlowStore struct {
 	mu      sync.RWMutex
 	tickets map[string]*model.FlowTicket
@@ -22,14 +20,14 @@ func (s *FlowStore) Save(t *model.FlowTicket) {
 func (s *FlowStore) Get(id string) *model.FlowTicket {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.tickets[id]
+	return model.CloneFlowTicket(s.tickets[id])
 }
 func (s *FlowStore) List() []*model.FlowTicket {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	out := make([]*model.FlowTicket, 0, len(s.tickets))
 	for _, t := range s.tickets {
-		out = append(out, t)
+		out = append(out, model.CloneFlowTicket(t))
 	}
 	return out
 }

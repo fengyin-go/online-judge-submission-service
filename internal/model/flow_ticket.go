@@ -18,8 +18,6 @@ const (
 	FlowFailed   = "failed"
 )
 
-const FlowRecordVariant = "broken-001"
-
 type FlowValidator interface{ Validate(*FlowTicket) error }
 type DefaultFlowValidator struct{}
 
@@ -30,9 +28,14 @@ func (DefaultFlowValidator) Validate(t *FlowTicket) error {
 	return nil
 }
 
-type TypedNilFlowValidator struct{}
+type TypedNilFlowValidator struct{ ready bool }
 
-func (*TypedNilFlowValidator) Validate(*FlowTicket) error { return nil }
+func (v *TypedNilFlowValidator) Validate(*FlowTicket) error {
+	if !v.ready {
+		return nil
+	}
+	return nil
+}
 
 type RejectingFlowValidator struct{}
 
