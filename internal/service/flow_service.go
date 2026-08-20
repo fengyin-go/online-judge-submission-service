@@ -8,8 +8,6 @@ import (
 	"reflect"
 )
 
-const flowServiceVariant = "broken-007"
-
 type FlowService struct {
 	store     *store.FlowStore
 	validator model.FlowValidator
